@@ -31,7 +31,7 @@
 
 ## WIP 🛠
 
-- Dark Mode
+- ~Dark Mode~
 - Add `mark for review\fav` feature
 - Leader Board
 - Better Responsive CSS
@@ -43,14 +43,14 @@
 > Clone the repo
     >> For Windows: Git Bash
     >> For Linux: Terminal
-    >> git clone https://github.com/AvanishCodes/450-DSA.git
+    >> git clone https://github.com/AsishRaju/450-DSA.git
 > Change the folder location to your source Code Folder
     >> cd 450dsa/src
 > Install the dependencies
     >> npm install
 > Start the server
     >> npm start
-> 450dsa runs on port 4000
+> 450DSA runs on port 3000 of your Local Machine
 ```
 
 [![OPEN-PR](https://img.shields.io/badge/Open%20For-PR-orange?style=for-the-badge&logo=github)](https://github.com/AsishRaju/450-DSA)

@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, createContext } from "react";
 import { BrowserRouter as Router, Route } from "react-router-dom";
 import { getData, updateDBData, resetDBData, exportDBData, importDBData } from "./services/dbServices";
-import { saveAs } from 'file-saver';
+import { saveAs } from "file-saver";
 import Spinner from "react-bootstrap/Spinner";
 import TopicCard from "./components/TopicCard/TopicCard";
 import Topic from "./components/Topic/Topic";
@@ -10,19 +10,38 @@ import Footer from "./components/Footer/Footer";
 import ReactGA from "react-ga";
 import "./App.css";
 
-function App() {
+// Creating a theme context
+export const ThemeContext = createContext(null);
 
+function App() {
 	// setting state for data received from the DB
 	const [questionData, setquestionData] = useState([]);
 
+	// if dark theme is enabled or not
+	const [dark, setDark] = useState(false);
+
 	// useEffect for fetching data from DB on load and init GA
 	useEffect(() => {
-		console.log('in use effect')
+		localStorage.removeItem("cid");
 		ReactGA.initialize(process.env.REACT_APP_GA_TRACKING_ID);
 		ReactGA.pageview(window.location.pathname + window.location.search);
 		getData((QuestionData) => {
 			setquestionData(QuestionData);
 		});
+
+		//implementing dark theme mode option
+		// checking if dark mode "isDark" is already declared or not
+		if (!("isDark" in window.localStorage)) {
+			window.localStorage.setItem("isDark", dark);
+		} else {
+			// initialising the value of dark with the already stored value
+			let temp = window.localStorage["isDark"];
+			if (temp === "false") {
+				setDark(false);
+			} else {
+				setDark(true);
+			}
+		}
 	}, []);
 
 	//to update progress in '/' route and also update DB
@@ -38,7 +57,7 @@ function App() {
 		setquestionData(reGenerateUpdatedData);
 	}
 
-	// reset and clear DB 
+	// reset and clear DB
 	function resetData() {
 		resetDBData((response) => {
 			setquestionData([]);
@@ -52,35 +71,48 @@ function App() {
 		exportDBData((data) => {
 			const fileData = JSON.stringify(data);
 			const blob = new Blob([fileData], { type: "text/plain" });
-			saveAs(blob, 'progress.json')
-			callback()
-		})
+			saveAs(blob, "progress.json");
+			callback();
+		});
 	}
 
 	// import 450DSA-Progress data
 
 	function importData(data, callback) {
 		importDBData(data, (QuestionData) => {
-			console.log(QuestionData)
 			setquestionData(QuestionData);
-			callback()
+			callback();
 		});
 	}
 
 	return (
 		<Router>
-			<div className="App">
-				<h1 className="app-heading text-center mt-5">450 DSA Cracker</h1>
+			<div className={dark ? "App dark" : "App"}>
+				<h1 className="app-heading text-center mt-5" style={{ color: dark ? "white" : "" }}>
+					450 DSA Cracker
+				</h1>
+
 				{questionData.length === 0 ? (
 					// load spinner until data is fetched from DB
 					<div className="d-flex justify-content-center">
 						<Spinner animation="grow" variant="success" />
 					</div>
 				) : (
-						<>
+					<>
+						<ThemeContext.Provider value={dark}>
 							{/* HOME AND ABOUT ROUTE */}
 							<Route exact path="/" children={<TopicCard questionData={questionData}></TopicCard>} />
-							<Route path="/about" children={<About resetData={resetData} exportData={exportData} importData={importData} setQuestionData={setquestionData}></About>} />
+							<Route
+								path="/about"
+								children={
+									<About
+										resetData={resetData}
+										exportData={exportData}
+										importData={importData}
+										setQuestionData={setquestionData}
+									></About>
+								}
+							/>
 
 							{/* TOPIC ROUTE */}
 							<Route path="/array" children={<Topic data={questionData[0]} updateData={updateData} />} />
@@ -98,10 +130,10 @@ function App() {
 							<Route path="/trie" children={<Topic data={questionData[12]} updateData={updateData} />} />
 							<Route path="/dynamic_programming" children={<Topic data={questionData[13]} updateData={updateData} />} />
 							<Route path="/bit_manipulation" children={<Topic data={questionData[14]} updateData={updateData} />} />
-						</>
-
-					)}
-				<Footer></Footer>
+						</ThemeContext.Provider>
+					</>
+				)}
+				<Footer dark={dark} setDark={setDark}></Footer>
 			</div>
 		</Router>
 	);
